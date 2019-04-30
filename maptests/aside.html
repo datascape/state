@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+  integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+  crossorigin=""/>
+   <!-- Make sure you put this AFTER Leaflet's CSS -->
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+  integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+  crossorigin=""></script>
+  <script src="http://d3js.org/d3.v5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+<link rel="stylesheet" href="../../../community/css/community.css" />
+    
+  <style>
+    #map { height: 400px; }
+    aside, pre { display: none; }
+    div#allLegends { position: relative; }
+    div.legend { position: relative; width: 300px; float: left; }
+  </style>
+</head>
+<body>
+<div class="testLinks">
+  To do: Load CSV for one aside, instead of list in page.
+</div>
+
+<!-- 1. + 2. insert aside block + data -->
+<aside class="myDataset">
+group,lat,long,index,address
+BK,48.157630,11.648014,1800,lothringer
+BK,48.141579,11.604729,100,sdakjh
+BK,48.143640,11.603463,1800,dsfasfslk 3.
+BK,48.157630,11.648014,1800,loithringer
+BK,48.141579,11.604729,100,sdakjh
+BK,48.143640,11.603463,1800,dsfasfslk 3.
+BK,48.143827,11.602895,500, sadkfjalsfj
+BK,48.143640,11.603463,,dsfasfslk 3.
+BK,48.143827,11.602895,, sadkfjalsfj
+BK,48.144099,11.602444,120, hansenstrasse 4A
+</aside>
+
+<aside class="d2">
+group,lat,long,value
+KK,48.157630,11.648014,30
+KK,48.141579,11.604729,1800
+KK,48.143640,11.603463,200
+</aside>
+
+<aside class="d3">
+group,lat,long,value
+KI,48.157630,11.648014,Sepp
+KI,48.141579,11.604729,Schorsch
+KI,48.143640,11.603463,Hans
+</aside>
+
+    <div id="map"></div>
+    <div id="allLegends"></div>
+    <script>
+      var mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+          '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+          'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+          mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZWUyZGV2IiwiYSI6ImNqaWdsMXJvdTE4azIzcXFscTB1Nmcwcm4ifQ.hECfwyQtM7RtkBtydKpc5g';
+
+      var grayscale = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+          satellite = L.tileLayer(mbUrl, {id: 'mapbox.satellite',   attribution: mbAttr}),
+          streets = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
+
+      var layerGroups = {};
+      var dataParameters = []; 
+      var dp = {};
+
+      //////////////////////////////////////////////////////////////////
+      // Usage:
+      //
+      // data: csv file with 
+      //  long, lat for position
+      //  one numerical or categorical attribute to be visualized
+      //  + (optional) one attribute calles "address" to be shown in tooltip
+      // 
+      // 1. set class of aside element above to match the name of the data
+      // 2. insert data into aside element
+      // 3. specify the following dp (data parameters) 
+      // 4. initialize map center with [lat, long]
+      // 
+      // options for scales:
+      // "scaleThreshold", "scaleOrdinal", "scaleOrdinal" or "scaleQuantile"
+      //////////////////////////////////////////////////////////////////
+
+      // ------> for more data sets, copy FROM here
+      // 3. dataset 1
+      // specify start
+      dp = {
+        selector: "aside.myDataset",
+        delimiter: ",",
+        numColumns: ["lat","long","index","address"],
+        valueColumn: "index",
+        scaleType: "scaleThreshold",
+      }
+      dp.name = dp.selector.split(".").pop(); // name: myDataset
+      // specify end
+      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
+      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+      dp.group = L.layerGroup();
+      dataParameters.push(dp);
+      addCircles(dp);
+      addLegend(dp.scale, dp.scaleType, dp.name);
+      // ------> for more data sets, copy TO here
+
+      // 3. dataset 2
+      // specify start
+      dp = {
+        selector: "aside.d2",
+        delimiter: ",",
+        numColumns: ["lat","long","value"],
+        valueColumn: "value",
+        scaleType: "scaleQuantize",
+      }
+      dp.name = dp.selector.split(".").pop(); // name: d2
+      // specify end
+      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
+      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+      dp.group = L.layerGroup();
+      dataParameters.push(dp);
+      addCircles(dp);
+      addLegend(dp.scale, dp.scaleType, dp.name);
+
+      // 3. dataset 3
+      // specify start
+      dp = {
+        selector: "aside.d3",
+        delimiter: ",",
+        numColumns: ["lat","long"],
+        valueColumn: "value",
+        scaleType: "scaleOrdinal",
+      }
+      dp.name = dp.selector.split(".").pop(); // name: d3
+      // specify end
+      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
+      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+      dp.group = L.layerGroup();
+      dataParameters.push(dp);
+      addCircles(dp);
+      addLegend(dp.scale, dp.scaleType, dp.name);
+
+      // 3. dataset 4
+      // specify start
+      dp = {
+        selector: "aside.myDataset",
+        delimiter: ",",
+        numColumns: ["lat","long","index"],
+        valueColumn: "index",
+        scaleType: "scaleQuantile",
+      }
+      dp.name = "new name"; 
+      // specify end
+      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
+      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+      dp.group = L.layerGroup();
+      dataParameters.push(dp);
+      addCircles(dp);
+      addLegend(dp.scale, dp.scaleType, dp.name);
+
+      // 3. dataset 5
+      // specify start
+      dp = {
+        selector: "aside.myDataset",
+        delimiter: ",",
+        numColumns: ["lat","long","index"],
+        valueColumn: "index",
+        scaleType: "scaleQuantile",
+      }
+      dp.name = "new name2"; 
+      // specify end
+      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
+      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+      dp.group = L.layerGroup();
+      dataParameters.push(dp);
+      addCircles(dp);
+      addLegend(dp.scale, dp.scaleType, dp.name);
+
+
+      // 4. set center of map here
+      var mapCenter = [48.1523107, 11.6231103]; // [latitude, longitude]
+
+      // setup map
+      var map = L.map('map', {
+        center: mapCenter,
+        zoom: 14,
+        layers: [grayscale, dataParameters[0].group]
+      });
+
+      var baseLayers = {
+        "Grayscale": grayscale,
+        "Streets": streets,
+        "Satellite": satellite
+      };
+
+      var overlays = {};
+      dataParameters.forEach(function(ele) {
+        overlays[ele.name] = ele.group;
+      })
+
+      L.control.layers(baseLayers, overlays).addTo(map);
+
+      /////////////////////////////////////////
+      // helper functions
+      /////////////////////////////////////////
+      function addLegend(scale, scaleType, title) {
+        var svg = d3.select("#allLegends")
+          .append("div")
+            .attr("class", "legend "  + title)
+          .append("svg")
+            .style("width", 300)
+            .style("height", 300);
+
+        svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", "translate(20,20)");
+
+        var legend = d3.legendColor()
+          .labelFormat(d3.format(".2f"))
+          .title(title);
+      
+        if (scaleType === "scaleThreshold") {
+          legend = legend.labels(d3.legendHelpers.thresholdLabels);
+        }
+
+        legend.scale(scale);  
+
+        svg.select("g.legend")
+          .call(legend);
+      }
+      
+      function addCircles(dp) {
+        var circle;
+        var colorScale = dp.scale;
+        dp.data.forEach(function(element) {                
+          circle = L.circle([element.lat, element.long], {
+              color: colorScale(element[dp.valueColumn]),
+              fillColor: colorScale(element[dp.valueColumn]),
+              fillOpacity: 1,
+              radius: 50
+          }).addTo(dp.group);
+          circle.bindPopup("ID: " + element[dp.valueColumn] + "<br>Latitude: " + element.lat + "<br>Address: " + element.address);
+        });
+      }
+
+      // see also: http://d3indepth.com/scales/
+      function getScale(data, scaleType, valueCol) {
+        var scale;
+        if (scaleType === "scaleThreshold") {
+          var min = d3.min(data, function(d) { return d[valueCol]; });
+          var max = d3.max(data, function(d) { return d[valueCol]; });
+          var d = (max-min)/7;
+          scale = d3.scaleThreshold()
+            .domain([min+1*d,min+2*d,min+3*d,min+4*d,min+5*d,min+6*d])
+            .range(['#ffffe0','#ffd59b','#ffa474','#f47461','#db4551','#b81b34','#8b0000']);
+        } else if (scaleType === "scaleQuantize") {
+          scale = d3.scaleQuantize()
+            .domain(d3.extent(data, function(d) { return d[valueCol]; }))
+            .range(['#ffffe0','#ffd59b','#ffa474','#f47461','#db4551','#b81b34','#8b0000']);
+        } else if (scaleType === "scaleQuantile") {
+          scale = d3.scaleQuantile()
+            .domain(data.map(function(d) { return d[valueCol]; }).sort(function(a, b){return a-b}))
+            .range(['#ffffe0','#ffd59b','#ffa474','#f47461','#db4551','#b81b34','#8b0000']);            
+        } else if (scaleType === "scaleOrdinal") {
+          scale = d3.scaleOrdinal()
+            .domain(data.map(function(d) { return d[valueCol]; }))
+            .range(d3.schemePaired);
+        }
+        return scale;
+      }
+
+      function readData(selector, delimiter, columnsNum, valueCol) {
+        var psv = d3.dsvFormat(delimiter);
+        var initialData = psv.parse(removeWhiteSpaces(d3.select(selector).text())); 
+        _data = initialData.filter(function(e) { return e[valueCol].length !== 0; });
+        console.log("Skipped: " + (initialData.length - _data.length) + " rows.");
+        
+        if (typeof columnsNum !== "undefined") {
+          _data.forEach( function (row) {
+            convertToNumber(row, columnsNum);
+          });
+        }
+        console.log(_data);
+        return _data;
+      }
+
+      function convertToNumber(d, _columnsNum) {
+        for (var perm in d) {
+          if (_columnsNum.indexOf(perm) > -1)
+            if (Object.prototype.hasOwnProperty.call(d, perm)) {
+              d[perm] = +d[perm];
+            }
+          }  
+        return d;
+      } 
+	  
+	  function removeWhiteSpaces (str) {
+		return str.replace(/^\s+|\s+$|\s+(?=\s)/g, "");
+	  }
+    </script>
+  </body>
+</html>

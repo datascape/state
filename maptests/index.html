@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Leaflet</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+
+<!--
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
+-->
+<script src="https://d3js.org/d3.v5.js"></script>
+<link rel="stylesheet" href="../../community/css/community.css" />
+
+<style>
+html, body {
+	height: 100%;
+	margin: 0;
+}
+#map {
+	width: 100%;
+	height: 100%;
+}
+
+
+.point-cell {
+    pointer-events: all;
+    stroke: #000;
+    stroke-opacity: .2;
+}
+
+.c29 {
+    fill: rgba(230, 55, 52, 1.0);
+}
+
+.c28 {
+    fill: rgba(230, 61, 58, 0.98);
+}
+
+.c27 {
+    fill: rgba(230, 67, 64, 0.96);
+}
+
+.c26 {
+    fill: rgba(230, 72, 70, 0.94);
+}
+
+.c25 {
+    fill: rgba(230, 78, 76, 0.92);
+}
+
+.c24 {
+    fill: rgba(230, 84, 82, 0.9);
+}
+
+.c23 {
+    fill: rgba(230, 90, 88, 0.88);
+}
+
+.c22 {
+    fill: rgba(230, 96, 94, 0.86);
+}
+
+.c21 {
+    fill: rgba(230, 102, 100, 0.84);
+}
+
+.c20 {
+    fill: rgba(230, 108, 106, 0.82);
+}
+
+.c19 {
+    fill: rgba(230, 114, 112, 0.8);
+}
+
+.c18 {
+    fill: rgba(230, 120, 118, 0.78);
+}
+
+.c17 {
+    fill: rgba(230, 125, 124, 0.76);
+}
+
+.c16 {
+    fill: rgba(230, 131, 131, 0.74);
+}
+
+.c15 {
+    fill: rgba(230, 137, 137, 0.72);
+}
+
+.c14 {
+    fill: rgba(230, 143, 143, 0.7);
+}
+
+.c13 {
+    fill: rgba(230, 149, 149, 0.68);
+}
+
+.c12 {
+    fill: rgba(230, 155, 155, 0.66);
+}
+
+.c11 {
+    fill: rgba(230, 161, 161, 0.64);
+}
+
+.c10 {
+    fill: rgba(230, 167, 167, 0.62);
+}
+
+.c9 {
+    fill: rgba(230, 173, 173, 0.6);
+}
+
+.c8 {
+    fill: rgba(230, 179, 179, 0.58);
+}
+
+.c7 {
+    fill: rgba(230, 185, 185, 0.56);
+}
+
+.c6 {
+    fill: rgba(230, 191, 191, 0.54);
+}
+
+.c5 {
+    fill: rgba(230, 197, 197, 0.52);
+}
+
+.c4 {
+    fill: rgba(230, 203, 203, 0.50);
+}
+
+.c3 {
+    fill: rgba(230, 209, 209, 0.48);
+}
+
+.c2 {
+    fill: rgba(230, 215, 215, 0.46);
+}
+
+.c1 {
+    fill: rgba(230, 221, 221, 0.44);
+}
+
+.c0 {
+    fill: rgba(255, 255, 255, 0);
+}
+</style>
+</head>
+
+<body>
+<div class="testLinks">
+    <b>Map Starters</b><br>
+    <a href="index-topo.html">Topojson</a><br>
+    <a href="aside.html">Aside</a><br>
+
+    <!--
+    <a href="#columns=population:50;poverty_over65:80;education:40">Population, Senior Poverty, Education</a><br>
+    <a href="#columns=poverty_under18:24;poverty_over65:12">Poverty: Youth and Senior</a><br>
+    <a href="#columns=poverty_under18:24;poverty_18to65:12">Poverty: Youth and Adult</a><br>
+    <a href="#columns=poverty_18to65:24;poverty_over65:12">Poverty: Adult and Senior</a><br>
+    -->
+</div>
+
+<div id='map'></div>
+
+<script type="text/javascript" src="eu-countries.js"></script>
+
+<script>
+
+var map = L.map('map');
+
+map.createPane('labels');
+map.getPane('labels').style.zIndex = 650; // This pane is above markers but below popups
+map.getPane('labels').style.pointerEvents = 'none'; // Prevent layers in this pane from obscuring mouse/touch events
+
+
+var cartodbAttribution = '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', { // Map without labels
+	attribution: cartodbAttribution
+}).addTo(map);
+
+var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+	attribution: cartodbAttribution,
+	pane: 'labels'
+}).addTo(map);
+
+
+//////////// SHAPES FROM GEOJSON
+
+geojson = L.geoJson(euCountries).addTo(map);
+geojson.eachLayer(function (layer) {
+	layer.bindPopup(layer.feature.properties.name); // Small popup with name of shape
+});
+
+//map.setView({ lat: 47.040182144806664, lng: 9.667968750000002 }, 4);
+
+
+
+//////////// MAP POINTS
+
+//map.setView({ lat: 51.4659249585, lng: -3.16769715331 }, 14); // England
+map.setView({ lat: 37.0902, lng: -95.7129 }, 4); // USA
+
+
+var width = document.getElementById('map')
+    .clientWidth;
+var height = document.getElementById('map')
+    .clientHeight;
+
+/*
+var map = L.map('map', {
+    center: [51.4659249585, -3.16769715331],
+    zoom: 14
+});
+
+L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attribution">CARTO</a>'
+    })
+    .addTo(map);
+*/
+
+var draw = function() {
+    d3.select('#overlay')
+        .remove();
+    var bounds = map.getBounds();
+    var topLeft = map.latLngToLayerPoint(bounds.getNorthWest());
+    var bottomRight = map.latLngToLayerPoint(bounds.getSouthEast());
+    var existing = d3.set();
+    var drawLimit = bounds.pad(0.4);
+
+    var filteredPoints = points.filter(function(d) {
+        var latlng = new L.LatLng(d.lat, d.lon);  // Switch to lat lon for postcode_data.csv
+        if (!drawLimit.contains(latlng)) {
+            return false;
+        }
+        var point = map.latLngToLayerPoint(latlng);
+
+        key = point.toString();
+        if (existing.has(key)) {
+            return false;
+        }
+        existing.add(key);
+
+        d.x = point.x;
+        d.y = point.y;
+        return true;
+    });
+
+    var svg = d3.select(map.getPanes()
+            .overlayPane)
+        .append("svg")
+        .attr('id', 'overlay')
+        .attr("class", "leaflet-zoom-hide")
+        .style("width", map.getSize()
+            .x + 'px')
+        .style("height", map.getSize()
+            .y + 'px')
+        .style("margin-left", topLeft.x + "px")
+        .style("margin-top", topLeft.y + "px");
+
+    var g = svg.append("g")
+        .attr("transform", "translate(" + (-topLeft.x) + "," + (-topLeft.y) + ")");
+
+    var svgPoints = g.attr("class", "points")
+        .selectAll("g")
+        .data(filteredPoints)
+        .enter()
+        .append("g")
+        .attr("class", "point");
+
+    svgPoints.append("circle")
+        .attr("class", function(d) {
+            return "point-cell c" + d.count;
+        })
+        .attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        })
+        .attr("r", function(d) {
+            //return d.count;
+            return 2;
+        });
+}
+
+var dataset = "../../community/map/zip/basic/places.csv"
+//dataset = "leaflet/postcode_data.csv" // Also switch lat lon above
+
+// v5 - Based on: https://stackoverflow.com/questions/49599691/how-to-load-data-from-a-csv-file-in-d3-v5
+d3.csv(dataset).then(function(d) {
+	  // data is now whole data set
+      // draw chart in here!
+      points = d;
+      console.log("Places: " + d)
+	  draw();
+	  map.on('viewreset moveend', draw);
+  })
+  .catch(function(error){
+     // handle error   
+     alert("error: " + error)
+  })
+
+// v4
+/*
+d3.csv('leaflet/postcode_data.csv', function(d) {
+    return {
+        postcode: d.postcode,
+        lat: +d.lat,
+        lon: +d.lon,
+        count: +d.count
+    };
+}, function(error, rows) {
+    points = rows;
+    draw();
+    map.on('viewreset moveend', draw);
+});
+*/
+
+// Tile layers http://bl.ocks.org/d3noob/7828823
+</script>
+
+
+</body>
+</html>

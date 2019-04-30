@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Leaflet</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+
+<script src="//d3js.org/d3.v5.min.js"></script>
+<script src="//d3js.org/topojson.v2.min.js"></script>
+<link rel="stylesheet" href="../../../community/css/community.css" />
+
+<style>
+html, body {
+	height: 100%;
+	margin: 0;
+}
+#map {
+	width: 100%;
+	height: 100%;
+}
+</style>
+
+
+<style>
+path {
+  fillX: #ccc;
+  stroke: #fff;
+  stroke-width: .1px;
+}
+path:hover {
+  fill: red;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="testLinks">
+  Incomplete, copy more from community/map/leaflet to load state topo.
+</div>
+
+<div id='map'></div>
+
+<script type="text/javascript" src="eu-countries.js"></script>
+
+<script>
+
+var map = L.map('map');
+
+map.createPane('labels');
+map.getPane('labels').style.zIndex = 650; // This pane is above markers but below popups
+map.getPane('labels').style.pointerEvents = 'none'; // Prevent layers in this pane from obscuring mouse/touch events
+
+
+var cartodbAttribution = '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', { // Map without labels
+	attribution: cartodbAttribution
+}).addTo(map);
+
+var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+	attribution: cartodbAttribution,
+	pane: 'labels'
+}).addTo(map);
+
+geojson = L.geoJson(euCountries).addTo(map);
+geojson.eachLayer(function (layer) {
+	layer.bindPopup(layer.feature.properties.name); // Small popup with name of shape
+});
+
+map.setView({ lat: 47.040182144806664, lng: 9.667968750000002 }, 4);
+
+
+
+// Incomplete, copy more from community/map/leaflet
+var req = new XMLHttpRequest();
+
+var path = d3.geoPath();
+var svg = d3.select("body")
+  .append("svg")
+  .attr("width", "100%")
+  .attr("height", "100%")
+  .attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 960 500");
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+//var req = new XMLHttpRequest();
+//var neighbors;
+//var topodata = {};
+var geojson2;
+
+d3.json("../../../community/map/zcta/states/Georgia.topo.json").then(function(topology,error) {
+    //if (error) throw error;
+  
+  //topoob = JSON.parse(req.responseText);
+  //neighbors = topojson.neighbors(topoob.objects.data.geometries);
+  //topodata = topojson.feature(topoob, topoob.objects.data);
+  geojson2 = topojson.feature(topology, topology.objects.data);
+
+  console.log("topojson", topology)
+  //var geojson = topojson.feature(topology, topology.objects.zcta); // zcta was counties
+  //console.log("geojson", geojson)
+
+  svg.selectAll("path")
+      .data(geojson2.features)
+    .enter().append("path")
+    .attr('fill',function(d,i) { return color(i); })
+    .attr("d", path);
+});
+
+</script>
+
+
+</body>
+</html>
