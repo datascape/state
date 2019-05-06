@@ -19,7 +19,7 @@ The EPA's Sustainable Materials Management (SMM) USEEIO model covers potential i
 
 
 Carcinogen Free Products<!--(toxin free manufacturing)-->  
-Clean Energy  (solar, geothermal, hydrogen, 4th-generation nuclear)  
+Clean Energy<!-- (solar, geothermal, hydrogen, 4th-generation nuclear)-->  
 Clean Water  
 Recycled/Reclaimed Products  
 [Additional Indicators - JSON](https://smmtool.app.cloud.gov/api/GAUSEEIO/indicators)
