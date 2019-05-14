@@ -1,8 +1,9 @@
+<!--
 #### Machine Learning for
 # State Government
+-->
 
-
-<h2>Sustainable Material Flow</h2>
+<h1>Georgia IO</h1>
 
 <!--
 ## Sustainable Materials Management (SMM)
@@ -13,7 +14,7 @@
 [USEEIO Extended Input-Output Model](https://cfpub.epa.gov/si/si_public_record_report.cfm?Lab=NRMRL&dirEntryId=336332)
 
 
-### Topic Themes
+<!--### Topic Themes-->
 
 The EPA's Sustainable Materials Management (SMM) USEEIO model covers potential impacts to human health, air, water and soil from all goods and services consumed in the US in approximately 400 categories, including:
 
@@ -22,10 +23,6 @@ Carcinogen Free Products<!--(toxin free manufacturing)-->
 Clean Energy<!-- (solar, geothermal, hydrogen, 4th-generation nuclear)-->  
 Clean Water  
 Recycled/Reclaimed Products  
-[Additional Indicators - JSON](https://smmtool.app.cloud.gov/api/GAUSEEIO/indicators)
-
-
-
 
 <!--
 Handsfree Devices (AR headsets, heads-up computing, hands-free devices)  
@@ -53,9 +50,9 @@ Emission intensity modifiers
 USEEIO API widget functions will include good and service lookups, life cycle impact calculation, purchaser to producer price conversions, and emission intensity modifiers. 
 -->
 
-<a href="io" target="mainframe">State IO</a> | 
-<a href="../community/map/leaflet" target="mainframe">Cluster Map</a> | 
-<a href="maptests" target="mainframe">Additional Maps</a><br><br>
+<a href="io" target="mainframe">All Indicators</a> | 
+<a href="io/versioning.html" target="mainframe">USEEIO Versioning</a>
+<br><br>
 
 
 

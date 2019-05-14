@@ -1,25 +1,221 @@
-<html><head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <title>State IO - versioning</title>
-  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <script type="text/javascript" src="../../community/js/d3/d3.v3.js"></script>
-  <script type="text/javascript" src="../../community/js/common.js"></script>
-  <script type="text/javascript" src="../../community/js/showdown.min.js"></script>
+<!DOCTYPE html>
+<html>
 
-  <link rel="stylesheet" href="../../community/css/community.css" />
-  <script type="text/javascript">
-  loadMarkupPage("versioning.md", "topicsDiv", "_parent");
-  </script>
+<head>
+<meta charset='UTF-8'>
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<meta name="robots" content="noindex, nofollow">
+<title>IO Indicators - JSON API</title>
+
+<!-- CSV reader sample by Mingsong Hu
+  http://bl.ocks.org/AMDS/4a61497182b8fcb05906
+
+  Info about reading files and COMBINING multiple sources
+  http://learnjsdata.com/read_data.html
+-->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--[if !IE]><!-->
+<style>
+* { 
+  margin: 0; 
+  padding: 0; 
+ }
+ body { 
+   font: 14px/1.4 Georgia, Serif; 
+ }
+#page-wrap {
+  margin: 50px;
+}
+p {
+ margin: 20px 0; 
+}
+
+
+.level2 {
+  
+}
+.level3 {
+  paddingX:20px;
+  borderX:1px solid #ccc;
+}
+/* 
+Generic Styling, for Desktops/Laptops 
+*/
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+/* Zebra striping */
+tr:nth-of-type(odd) { 
+  background: #eee; 
+}
+th { 
+  background: #333; 
+  color: white; 
+  font-weight: bold; 
+  cursor: s-resize;
+  background-repeat: no-repeat;
+    background-position: 3% center;
+}
+td, th { 
+  padding: 6px; 
+  border: 1px solid #ccc; 
+  text-align: left; 
+}
+
+th.des:after {
+  content: "\21E9";
+}
+
+th.aes:after {
+  content: "\21E7";
+}
+
+/* 
+Max width before this PARTICULAR table gets nasty
+This query will take effect for any screen smaller than 760px
+and also iPads specifically.
+*/
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+
+  /* Force table to not be like tables anymore */
+  table, thead, tbody, th, td, tr { 
+    display: block; 
+  }
+  
+  /* Hide table headers (but not display: none;, for accessibility) */
+  thead tr { 
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  tr { border: 1px solid #ccc; }
+  
+  td { 
+    /* Behave  like a "row" */
+    border: none;
+    border-bottom: 1px solid #eee; 
+    position: relative;
+    padding-left: 50%; 
+  }
+  
+  td:before { 
+    /* Now like a table header */
+    position: absolute;
+    /* Top/left values mimic padding */
+    top: 6px;
+    left: 6px;
+    width: 45%; 
+    padding-right: 10px; 
+    white-space: nowrap;
+  }
+  
+  /*
+  Label the data
+  */
+  td:before {
+    content: attr(data-th) ": ";
+      font-weight: bold;
+      width: 6.5em;
+      display: inline-block;
+  }
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px) {
+  body { 
+    padding: 0; 
+    margin: 0; 
+    width: 320px; }
+  }
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+  body { 
+    width: 495px; 
+  }
+}
+
+</style>
+<!--<![endif]-->
+
+<script type="text/javascript" src="//d3js.org/d3.v5.min.js"></script>
+<script type="text/javascript" src="https://datascape.github.io/community/js/zepto/zepto.min.js"></script>
+<script type="text/javascript" src="https://datascape.github.io/community/js/common.js"></script>
+<link rel="stylesheet" href="https://datascape.github.io/community/css/community.css" />
+<script type="text/javascript">
+
+$(document).ready(function () {
+  //var zip = param["zip"] || "30318";
+  
+
+  var url = "https://smmtool.app.cloud.gov/api/GAUSEEIO/indicators";
+
+  // Adjust map page too if adding.
+  //selected_array=["founders","foundingDate","images","location","locations","yearlyRevenues","categories"];
+
+    d3.json(url).then(function(json,error) {
+      var fullHtml = '';
+      
+      
+      //json = Array.from(json);
+      json.data = json;
+
+      //alert("json.length: " + json.length); // Returns 24
+
+      for (var i = 0; i < json.length; i++) {
+          
+          //fullHtml += (json[i].id + ' ' + json[i].name);
+
+          //fullHtml += "<div class='level1'>" + json.data[a].name + "</div>\n";
+          fullHtml += "<div class='level1'>" + json[i].name + "</div>\n";
+
+          for (var a in json[i]) { //a is the key
+            //fullHtml += (a + " " + json[i][a] + "<br>")
+
+
+            fullHtml += formatRow(a,json[i][a],1); // Resides in common.js
+
+            //console.log(json[i].[a] + ' ' + json[i].[a]);
+          }
+      }
+
+        resultFull.innerHTML = fullHtml;
+        result.innerHTML = '';
+
+
+        if (error) throw error;
+        console.log(json);
+    });
+});
+</script>
+
 </head>
+
 
 <body>
 
-<div style="border-top: 1px solid #ccc; padding:40px; background:#fcfcfc; clear:both; overflow: auto;">
-  <div id="topicsDiv"></div>
+<div id="page-wrap">
+
+  <h1>Indicators</h1>
+
+
+  <!--
+  Displays json hierarchy containing arrays and objects. &nbsp;Click to expand.<br><br>
+  -->
+  <div id="result">Loading indicators...<br></div>
+  <div id="resultFull"></div>
+
 </div>
 
+
 </body>
+
 </html>
