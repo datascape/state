@@ -50,7 +50,7 @@ Emission intensity modifiers
 USEEIO API widget functions will include good and service lookups, life cycle impact calculation, purchaser to producer price conversions, and emission intensity modifiers. 
 -->
 
-<a href="io" target="mainframe">All Indicators</a> | 
+<a href="io" target="_parent">All Indicators</a> | 
 <a href="io/versioning.html" target="mainframe">USEEIO Versioning</a>
 <br><br>
 
