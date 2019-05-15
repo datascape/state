@@ -211,11 +211,12 @@ KI,48.143640,11.603463,Hans
             scaleType: "scaleQuantile",
             //scaleType: "scaleOrdinal",
           }
-          dp.name = "Places (CSV)"; 
+          dp.name = "PlacesCSV"; 
           dp.data = readCsvData(d, dp.numColumns, dp.valueColumn);
           dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
           dp.group = L.layerGroup();
           dataParameters.push(dp);
+          overlays[dp.name] = dp.group; // Allows for use of dp.name with removeLayer and addLayer
 
           layerControl.addOverlay(dp.group, dp.name); // Appends to existing layers
           addCircles(dp);
@@ -225,8 +226,18 @@ KI,48.143640,11.603463,Hans
           console.log("dataParameters:");
           console.log(dataParameters);
 
-          //make the layer active. 
-          //d2.addTo(map);
+          // Remove from control and background.
+          //layerControl.removeLayer(grayscale);
+          //map.removeLayer(grayscale);
+
+          
+          //layerControl.removeLayer(overlays["myDataset"]); // Remove from control 
+          map.removeLayer(overlays["myDataset"]); // Remove from map
+
+          map.addLayer(overlays["PlacesCSV"]);
+
+          //make the layer active - not working
+          //PlacesCSV.addTo(map);
       })
       //.catch(function(error){ 
       //     alert("Data loading error: " + error)
