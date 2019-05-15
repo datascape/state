@@ -207,11 +207,11 @@ KI,48.143640,11.603463,Hans
             // Change lon to long
             numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","long","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
 
-            valueColumn: "sum_of_tickets_earned",
+            valueColumn: "IncomeUnder25K",
             scaleType: "scaleQuantile",
             //scaleType: "scaleOrdinal",
           }
-          dp.name = "PlacesCSV"; 
+          dp.name = "Poverty (CSV)"; 
           dp.data = readCsvData(d, dp.numColumns, dp.valueColumn);
           dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
           dp.group = L.layerGroup();
@@ -234,10 +234,10 @@ KI,48.143640,11.603463,Hans
           //layerControl.removeLayer(overlays["myDataset"]); // Remove from control 
           map.removeLayer(overlays["myDataset"]); // Remove from map
 
-          map.addLayer(overlays["PlacesCSV"]);
+          map.addLayer(overlays["Poverty (CSV)"]);
 
           //make the layer active - not working
-          //PlacesCSV.addTo(map);
+          //Poverty (CSV).addTo(map);
       })
       //.catch(function(error){ 
       //     alert("Data loading error: " + error)
