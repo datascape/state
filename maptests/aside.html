@@ -25,7 +25,7 @@
 </head>
 <body>
 <div class="testLinks">
-  To do: Load CSV for one aside, instead of list in page.
+  Loads CSV for one layer.
 </div>
 
 <!-- 1. + 2. insert aside block + data -->
@@ -69,7 +69,7 @@ KI,48.143640,11.603463,Hans
           satellite = L.tileLayer(mbUrl, {id: 'mapbox.satellite',   attribution: mbAttr}),
           streets = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
 
-      var layerGroups = {};
+      //var layerGroups = {};
       var dataParameters = []; 
       var dp = {};
       var layerControl = false;
@@ -187,17 +187,13 @@ KI,48.143640,11.603463,Hans
         "Satellite": satellite
       };
 
-      // BUGBUG TODO: Trigger after csv dataset(s) load.
-      //setTimeout(function(){
-
-        var overlays = {};
-        dataParameters.forEach(function(ele) {
-          overlays[ele.name] = ele.group;
-        })
-      
+      var overlays = {};
+      dataParameters.forEach(function(ele) {
+        overlays[ele.name] = ele.group;
+      })
+      if(layerControl === false) {
         layerControl = L.control.layers(baseLayers, overlays).addTo(map);
-      //}, 500);
-
+      }
 
 
       // 5. Load Layers Asynchronously
@@ -205,7 +201,7 @@ KI,48.143640,11.603463,Hans
       d3.csv(dataset).then(function(d) {
           dp = {
             //selector: "aside.myDataset",
-            delimiter: ",",
+            //delimiter: ",",
             //numColumns: ["lat","lon","index"],
 
             // Change lon to long
@@ -216,7 +212,7 @@ KI,48.143640,11.603463,Hans
             //scaleType: "scaleOrdinal",
           }
           dp.name = "Places (CSV)"; 
-          dp.data = readCsvData(d, dp.delimiter, dp.numColumns, dp.valueColumn);
+          dp.data = readCsvData(d, dp.numColumns, dp.valueColumn);
           dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
           dp.group = L.layerGroup();
           dataParameters.push(dp);
@@ -224,6 +220,13 @@ KI,48.143640,11.603463,Hans
           layerControl.addOverlay(dp.group, dp.name); // Appends to existing layers
           addCircles(dp);
           addLegend(dp.scale, dp.scaleType, dp.name);
+
+          // All layers reside in this object:
+          console.log("dataParameters:");
+          console.log(dataParameters);
+
+          //make the layer active. 
+          //d2.addTo(map);
       })
       //.catch(function(error){ 
       //     alert("Data loading error: " + error)
@@ -313,16 +316,11 @@ KI,48.143640,11.603463,Hans
             convertToNumber(row, columnsNum);
           });
         }
-        console.log(_data);
+        //console.log(_data);
         return _data;
       }
-      function readCsvData(_data, delimiter, columnsNum, valueCol) {
-        console.log(_data);
-
-        //var psv = d3.dsvFormat(delimiter);
-        //var initialData = psv.parse(removeWhiteSpaces(d3.select(selector).text()));
-        //_data = initialData.filter(function(e) { return e[valueCol].length !== 0; });
-        //console.log("Skipped: " + (initialData.length - _data.length) + " rows.");
+      function readCsvData(_data, columnsNum, valueCol) {
+        //console.log(_data);
         
         if (typeof columnsNum !== "undefined") {
           _data.forEach( function (row) {
