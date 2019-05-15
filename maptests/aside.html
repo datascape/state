@@ -164,23 +164,43 @@ KI,48.143640,11.603463,Hans
       addCircles(dp);
       addLegend(dp.scale, dp.scaleType, dp.name);
 
+
       // 3. dataset 5
-      // specify start
-      dp = {
-        selector: "aside.myDataset",
-        delimiter: ",",
-        numColumns: ["lat","long","index"],
-        valueColumn: "index",
-        scaleType: "scaleQuantile",
-      }
-      dp.name = "new name2"; 
-      // specify end
-      dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
-      dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
-      dp.group = L.layerGroup();
-      dataParameters.push(dp);
-      addCircles(dp);
-      addLegend(dp.scale, dp.scaleType, dp.name);
+      var dataset = "../../community/map/zip/basic/places_long_temp.csv"
+      d3.csv(dataset).then(function(d) {
+
+          // specify start
+          dp = {
+            selector: "aside.myDataset",
+            delimiter: ",",
+            //numColumns: ["lat","lon","index"],
+
+            // Change lon to long
+            numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","long","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
+
+            valueColumn: "sum_of_tickets_earned",
+            scaleType: "scaleQuantile",
+            //scaleType: "scaleOrdinal",
+          }
+          dp.name = "new name2"; 
+          // specify end
+          dp.data = readCsvData(d, dp.delimiter, dp.numColumns, dp.valueColumn);
+          //dp.data = d;
+          dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+          dp.group = L.layerGroup();
+          dataParameters.push(dp);
+          addCircles(dp);
+          addLegend(dp.scale, dp.scaleType, dp.name);
+
+          //map.on('viewreset moveend', draw);
+      })
+      //.catch(function(error){ 
+      //     alert("Data loading error: " + error)
+      //})
+
+
+      
+      
 
 
       // 4. set center of map here
@@ -190,7 +210,7 @@ KI,48.143640,11.603463,Hans
       var map = L.map('map', {
         center: mapCenter,
         scrollWheelZoom: false,
-        zoom: 14,
+        zoom: 2,
         layers: [grayscale, dataParameters[0].group]
       });
 
@@ -237,14 +257,16 @@ KI,48.143640,11.603463,Hans
       }
       
       function addCircles(dp) {
+
         var circle;
         var colorScale = dp.scale;
-        dp.data.forEach(function(element) {                
+        dp.data.forEach(function(element) {    
+          //console.log("addCircles " + element.lat + " " + element.long)            
           circle = L.circle([element.lat, element.long], {
               color: colorScale(element[dp.valueColumn]),
               fillColor: colorScale(element[dp.valueColumn]),
               fillOpacity: 1,
-              radius: 50
+              radius: 500000 // was 50
           }).addTo(dp.group);
           circle.bindPopup("ID: " + element[dp.valueColumn] + "<br>Latitude: " + element.lat + "<br>Address: " + element.address);
         });
@@ -290,7 +312,21 @@ KI,48.143640,11.603463,Hans
         console.log(_data);
         return _data;
       }
-
+      function readCsvData(_data, delimiter, columnsNum, valueCol) {
+        console.log(_data);
+        var psv = d3.dsvFormat(delimiter);
+        //var initialData = psv.parse(removeWhiteSpaces(d3.select(selector).text()));
+        //_data = initialData.filter(function(e) { return e[valueCol].length !== 0; });
+        //console.log("Skipped: " + (initialData.length - _data.length) + " rows.");
+        
+        if (typeof columnsNum !== "undefined") {
+          _data.forEach( function (row) {
+            convertToNumber(row, columnsNum);
+          });
+        }
+        console.log(_data);
+        return _data;
+      }
       function convertToNumber(d, _columnsNum) {
         for (var perm in d) {
           if (_columnsNum.indexOf(perm) > -1)
