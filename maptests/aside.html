@@ -72,6 +72,7 @@ KI,48.143640,11.603463,Hans
       var layerGroups = {};
       var dataParameters = []; 
       var dp = {};
+      var layerControl = false;
 
       //////////////////////////////////////////////////////////////////
       // Usage:
@@ -85,7 +86,8 @@ KI,48.143640,11.603463,Hans
       // 2. insert data into aside element
       // 3. specify the following dp (data parameters) 
       // 4. initialize map center with [lat, long]
-      // 
+      // 5. Load Layers Asynchronously
+      //
       // options for scales:
       // "scaleThreshold", "scaleOrdinal", "scaleOrdinal" or "scaleQuantile"
       //////////////////////////////////////////////////////////////////
@@ -165,42 +167,7 @@ KI,48.143640,11.603463,Hans
       addLegend(dp.scale, dp.scaleType, dp.name);
 
 
-      // 3. dataset 5
-      var dataset = "../../community/map/zip/basic/places_long_temp.csv"
-      d3.csv(dataset).then(function(d) {
 
-          // specify start
-          dp = {
-            selector: "aside.myDataset",
-            delimiter: ",",
-            //numColumns: ["lat","lon","index"],
-
-            // Change lon to long
-            numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","long","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
-
-            valueColumn: "sum_of_tickets_earned",
-            scaleType: "scaleQuantile",
-            //scaleType: "scaleOrdinal",
-          }
-          dp.name = "new name2"; 
-          // specify end
-          dp.data = readCsvData(d, dp.delimiter, dp.numColumns, dp.valueColumn);
-          //dp.data = d;
-          dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
-          dp.group = L.layerGroup();
-          dataParameters.push(dp);
-          addCircles(dp);
-          addLegend(dp.scale, dp.scaleType, dp.name);
-
-          //map.on('viewreset moveend', draw);
-      })
-      //.catch(function(error){ 
-      //     alert("Data loading error: " + error)
-      //})
-
-
-      
-      
 
 
       // 4. set center of map here
@@ -220,12 +187,49 @@ KI,48.143640,11.603463,Hans
         "Satellite": satellite
       };
 
-      var overlays = {};
-      dataParameters.forEach(function(ele) {
-        overlays[ele.name] = ele.group;
-      })
+      // BUGBUG TODO: Trigger after csv dataset(s) load.
+      //setTimeout(function(){
 
-      L.control.layers(baseLayers, overlays).addTo(map);
+        var overlays = {};
+        dataParameters.forEach(function(ele) {
+          overlays[ele.name] = ele.group;
+        })
+      
+        layerControl = L.control.layers(baseLayers, overlays).addTo(map);
+      //}, 500);
+
+
+
+      // 5. Load Layers Asynchronously
+      var dataset = "../../community/map/zip/basic/places_long_temp.csv"
+      d3.csv(dataset).then(function(d) {
+          dp = {
+            //selector: "aside.myDataset",
+            delimiter: ",",
+            //numColumns: ["lat","lon","index"],
+
+            // Change lon to long
+            numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","long","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
+
+            valueColumn: "sum_of_tickets_earned",
+            scaleType: "scaleQuantile",
+            //scaleType: "scaleOrdinal",
+          }
+          dp.name = "Places (CSV)"; 
+          dp.data = readCsvData(d, dp.delimiter, dp.numColumns, dp.valueColumn);
+          dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
+          dp.group = L.layerGroup();
+          dataParameters.push(dp);
+
+          layerControl.addOverlay(dp.group, dp.name); // Appends to existing layers
+          addCircles(dp);
+          addLegend(dp.scale, dp.scaleType, dp.name);
+      })
+      //.catch(function(error){ 
+      //     alert("Data loading error: " + error)
+      //})
+
+
 
       /////////////////////////////////////////
       // helper functions
@@ -266,7 +270,7 @@ KI,48.143640,11.603463,Hans
               color: colorScale(element[dp.valueColumn]),
               fillColor: colorScale(element[dp.valueColumn]),
               fillOpacity: 1,
-              radius: 500000 // was 50
+              radius: 5000 // was 50
           }).addTo(dp.group);
           circle.bindPopup("ID: " + element[dp.valueColumn] + "<br>Latitude: " + element.lat + "<br>Address: " + element.address);
         });
@@ -314,13 +318,15 @@ KI,48.143640,11.603463,Hans
       }
       function readCsvData(_data, delimiter, columnsNum, valueCol) {
         console.log(_data);
-        var psv = d3.dsvFormat(delimiter);
+
+        //var psv = d3.dsvFormat(delimiter);
         //var initialData = psv.parse(removeWhiteSpaces(d3.select(selector).text()));
         //_data = initialData.filter(function(e) { return e[valueCol].length !== 0; });
         //console.log("Skipped: " + (initialData.length - _data.length) + " rows.");
         
         if (typeof columnsNum !== "undefined") {
           _data.forEach( function (row) {
+            //row = removeWhiteSpaces(row);
             convertToNumber(row, columnsNum);
           });
         }
@@ -338,7 +344,7 @@ KI,48.143640,11.603463,Hans
       } 
 	  
 	  function removeWhiteSpaces (str) {
-		return str.replace(/^\s+|\s+$|\s+(?=\s)/g, "");
+		  return str.replace(/^\s+|\s+$|\s+(?=\s)/g, "");
 	  }
     </script>
   </body>
