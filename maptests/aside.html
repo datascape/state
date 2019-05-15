@@ -113,7 +113,6 @@ KI,48.143640,11.603463,Hans
       // ------> for more data sets, copy TO here
 
       // 3. dataset 2
-      // specify start
       dp = {
         selector: "aside.d2",
         delimiter: ",",
@@ -122,7 +121,6 @@ KI,48.143640,11.603463,Hans
         scaleType: "scaleQuantize",
       }
       dp.name = dp.selector.split(".").pop(); // name: d2
-      // specify end
       dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
       dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
       dp.group = L.layerGroup();
@@ -131,7 +129,6 @@ KI,48.143640,11.603463,Hans
       addLegend(dp.scale, dp.scaleType, dp.name);
 
       // 3. dataset 3
-      // specify start
       dp = {
         selector: "aside.d3",
         delimiter: ",",
@@ -140,7 +137,6 @@ KI,48.143640,11.603463,Hans
         scaleType: "scaleOrdinal",
       }
       dp.name = dp.selector.split(".").pop(); // name: d3
-      // specify end
       dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
       dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
       dp.group = L.layerGroup();
@@ -149,7 +145,6 @@ KI,48.143640,11.603463,Hans
       addLegend(dp.scale, dp.scaleType, dp.name);
 
       // 3. dataset 4
-      // specify start
       dp = {
         selector: "aside.myDataset",
         delimiter: ",",
@@ -158,7 +153,6 @@ KI,48.143640,11.603463,Hans
         scaleType: "scaleQuantile",
       }
       dp.name = "new name"; 
-      // specify end
       dp.data = readData(dp.selector, dp.delimiter, dp.numColumns, dp.valueColumn);
       dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
       dp.group = L.layerGroup();
@@ -167,17 +161,14 @@ KI,48.143640,11.603463,Hans
       addLegend(dp.scale, dp.scaleType, dp.name);
 
 
-
-
-
       // 4. set center of map here
-      var mapCenter = [48.1523107, 11.6231103]; // [latitude, longitude]
+      var mapCenter = [39.82, -75.57]; // [latitude, longitude]
 
       // setup map
       var map = L.map('map', {
         center: mapCenter,
         scrollWheelZoom: false,
-        zoom: 2,
+        zoom: 3,
         layers: [grayscale, dataParameters[0].group]
       });
 
@@ -197,7 +188,8 @@ KI,48.143640,11.603463,Hans
 
 
       // 5. Load Layers Asynchronously
-      var dataset = "../../community/map/zip/basic/places.csv";
+      //var dataset = "../../community/map/zip/basic/places.csv";
+      var dataset = "https://datascape.github.io/community/map/zip/basic/places.csv";
       d3.csv(dataset).then(function(d) {
           dp = {
             numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","lon","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
@@ -235,9 +227,9 @@ KI,48.143640,11.603463,Hans
           //make the layer active - not working
           //Places (CSV).addTo(map);
       })
-      //.catch(function(error){ 
-      //     alert("Data loading error: " + error)
-      //})
+      .catch(function(error){ 
+           alert("Data loading error: " + error)
+      })
 
 
 
