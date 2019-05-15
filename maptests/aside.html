@@ -30,7 +30,7 @@
 
 <!-- 1. + 2. insert aside block + data -->
 <aside class="myDataset">
-group,lat,long,index,address
+group,lat,lon,index,address
 BK,48.157630,11.648014,1800,lothringer
 BK,48.141579,11.604729,100,sdakjh
 BK,48.143640,11.603463,1800,dsfasfslk 3.
@@ -44,14 +44,14 @@ BK,48.144099,11.602444,120, hansenstrasse 4A
 </aside>
 
 <aside class="d2">
-group,lat,long,value
+group,lat,lon,value
 KK,48.157630,11.648014,30
 KK,48.141579,11.604729,1800
 KK,48.143640,11.603463,200
 </aside>
 
 <aside class="d3">
-group,lat,long,value
+group,lat,lon,value
 KI,48.157630,11.648014,Sepp
 KI,48.141579,11.604729,Schorsch
 KI,48.143640,11.603463,Hans
@@ -78,14 +78,14 @@ KI,48.143640,11.603463,Hans
       // Usage:
       //
       // data: csv file with 
-      //  long, lat for position
+      //  lon, lat for position
       //  one numerical or categorical attribute to be visualized
       //  + (optional) one attribute calles "address" to be shown in tooltip
       // 
       // 1. set class of aside element above to match the name of the data
       // 2. insert data into aside element
       // 3. specify the following dp (data parameters) 
-      // 4. initialize map center with [lat, long]
+      // 4. initialize map center with [lat, lon]
       // 5. Load Layers Asynchronously
       //
       // options for scales:
@@ -98,7 +98,7 @@ KI,48.143640,11.603463,Hans
       dp = {
         selector: "aside.myDataset",
         delimiter: ",",
-        numColumns: ["lat","long","index","address"],
+        numColumns: ["lat","lon","index","address"],
         valueColumn: "index",
         scaleType: "scaleThreshold",
       }
@@ -117,7 +117,7 @@ KI,48.143640,11.603463,Hans
       dp = {
         selector: "aside.d2",
         delimiter: ",",
-        numColumns: ["lat","long","value"],
+        numColumns: ["lat","lon","value"],
         valueColumn: "value",
         scaleType: "scaleQuantize",
       }
@@ -135,7 +135,7 @@ KI,48.143640,11.603463,Hans
       dp = {
         selector: "aside.d3",
         delimiter: ",",
-        numColumns: ["lat","long"],
+        numColumns: ["lat","lon"],
         valueColumn: "value",
         scaleType: "scaleOrdinal",
       }
@@ -153,7 +153,7 @@ KI,48.143640,11.603463,Hans
       dp = {
         selector: "aside.myDataset",
         delimiter: ",",
-        numColumns: ["lat","long","index"],
+        numColumns: ["lat","lon","index"],
         valueColumn: "index",
         scaleType: "scaleQuantile",
       }
@@ -197,21 +197,17 @@ KI,48.143640,11.603463,Hans
 
 
       // 5. Load Layers Asynchronously
-      var dataset = "../../community/map/zip/basic/places_long_temp.csv"
+      var dataset = "../../community/map/zip/basic/places.csv";
       d3.csv(dataset).then(function(d) {
           dp = {
-            //selector: "aside.myDataset",
-            //delimiter: ",",
-            //numColumns: ["lat","lon","index"],
-
-            // Change lon to long
-            numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","long","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
-
+            numColumns: ["id","place","city","region","zip","type","verification_type","verification_number","sum_of_tickets_earned","count_of_projects_earning_tickets","years_tickets_earned","lat","lon","HouseMedianIncome","HouseMeanIncome","IncomeUnder25K"],
             valueColumn: "IncomeUnder25K",
+            latColumn: "lat",
+            lonColumn: "lon",
             scaleType: "scaleQuantile",
             //scaleType: "scaleOrdinal",
           }
-          dp.name = "Poverty (CSV)"; 
+          dp.name = "Places (CSV)"; 
           dp.data = readCsvData(d, dp.numColumns, dp.valueColumn);
           dp.scale = getScale(dp.data, dp.scaleType, dp.valueColumn);
           dp.group = L.layerGroup();
@@ -234,10 +230,10 @@ KI,48.143640,11.603463,Hans
           //layerControl.removeLayer(overlays["myDataset"]); // Remove from control 
           map.removeLayer(overlays["myDataset"]); // Remove from map
 
-          map.addLayer(overlays["Poverty (CSV)"]);
+          map.addLayer(overlays["Places (CSV)"]);
 
           //make the layer active - not working
-          //Poverty (CSV).addTo(map);
+          //Places (CSV).addTo(map);
       })
       //.catch(function(error){ 
       //     alert("Data loading error: " + error)
@@ -275,18 +271,22 @@ KI,48.143640,11.603463,Hans
       }
       
       function addCircles(dp) {
-
         var circle;
         var colorScale = dp.scale;
-        dp.data.forEach(function(element) {    
-          //console.log("addCircles " + element.lat + " " + element.long)            
-          circle = L.circle([element.lat, element.long], {
+        dp.data.forEach(function(element) {
+          if (typeof dp.latColumn == "undefined") {
+            dp.latColumn = "lat";
+          }
+          if (typeof dp.lonColumn == "undefined") {
+            dp.lonColumn = "lon";
+          }
+          circle = L.circle([element[dp.latColumn], element[dp.lonColumn]], {
               color: colorScale(element[dp.valueColumn]),
               fillColor: colorScale(element[dp.valueColumn]),
               fillOpacity: 1,
               radius: 5000 // was 50
           }).addTo(dp.group);
-          circle.bindPopup("ID: " + element[dp.valueColumn] + "<br>Latitude: " + element.lat + "<br>Address: " + element.address);
+          circle.bindPopup("ID: " + element[dp.valueColumn] + "<br>Latitude: " + element[dp.latColumn] + "<br>Address: " + element.address);
         });
       }
 
