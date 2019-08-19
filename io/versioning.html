@@ -5,14 +5,16 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <script type="text/javascript" src="../../community/js/d3/d3.v3.js"></script>
-  <script type="text/javascript" src="../../community/js/common.js"></script>
-  <script type="text/javascript" src="../../community/js/showdown.min.js"></script>
+  <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
 
-  <link rel="stylesheet" href="../../community/css/community.css" />
-  <script type="text/javascript">
-  loadMarkupPage("versioning.md", "topicsDiv", "_parent");
-  </script>
+  <!--
+  Read this D3 overview ... SVGs for beginners
+  https://davidwalsh.name/learning-d3
+
+  Side-by-side
+  https://dillinger.io/
+  -->
 
   <style>
     table {
@@ -32,6 +34,23 @@
       margin: 0px !important;
     }
   </style>
+
+  <script>
+    function loadMarkupPage(pagePath, divID, target) {
+      d3.text(pagePath, function(data) {
+
+        var converter = new showdown.Converter({tables:true}),
+        html = converter.makeHtml(data);
+        document.getElementById(divID).innerHTML = html;
+
+      });
+    }
+  </script>
+
+  <link rel="stylesheet" href="../../community/css/community.css" />
+  <script type="text/javascript">
+  loadMarkupPage("versioning.md", "topicsDiv", "_parent");
+  </script>
 
 </head>
 
