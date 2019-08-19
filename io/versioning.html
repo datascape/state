@@ -5,7 +5,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+  <script type="text/javascript" src="//d3js.org/d3.v5.min.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
 
   <!--
@@ -37,8 +37,11 @@
 
   <script>
     function loadMarkupPage(pagePath, divID, target) {
-      d3.text(pagePath, function(data) {
-
+      //d3.text(pagePath, function(error, data) {
+      d3.text(pagePath).then(function(data) {
+        //if (error) throw error;
+        //console.log("the data")
+        console.log(data)
         var converter = new showdown.Converter({tables:true}),
         html = converter.makeHtml(data);
         document.getElementById(divID).innerHTML = html;
