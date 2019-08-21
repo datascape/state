@@ -8,14 +8,6 @@
   <script type="text/javascript" src="//d3js.org/d3.v5.min.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
 
-  <!--
-  Read this D3 overview ... SVGs for beginners
-  https://davidwalsh.name/learning-d3
-
-  Side-by-side
-  https://dillinger.io/
-  -->
-
   <style>
     table {
       font-size: 12px;
@@ -37,11 +29,7 @@
 
   <script>
     function loadMarkupPage(pagePath, divID, target) {
-      //d3.text(pagePath, function(error, data) {
       d3.text(pagePath).then(function(data) {
-        //if (error) throw error;
-        //console.log("the data")
-        console.log(data)
         var converter = new showdown.Converter({tables:true}),
         html = converter.makeHtml(data);
         document.getElementById(divID).innerHTML = html;
